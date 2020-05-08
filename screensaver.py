@@ -32,13 +32,19 @@ addon_path = addon.getAddonInfo('path')
 CONTROL_BACKGROUND = 1
 #CONTROL_ANIMATED_RAINBOW = 2
 
+#maybe put them in settings also?
+RENDER_WIDTH = '1920'
+RENDER_HEIGHT = '1080'
+
 TMP_IMG="/tmp/grafana.png"
-URL = 'http://nuc:3000/render/d/q4jAnx6Zk/zeenet?from=now-3h&to=now&width=1920&height=1080'
+URL = 'http://nuc:3000/render/d/q4jAnx6Zk/zeenet?from=now-3h&to=now&width=' + RENDER_WIDTH + '&height=' + RENDER_HEIGHT
 
 #Since grafan stores by default all temporary rendered data for 24h, might be a good idea to lower that time to 1m for example
 #[[paths]]
 #    temp_data_lifetime=1m
 
+class ExitPlease(Exception):
+    pass
 
 class Screensaver(xbmcgui.WindowXMLDialog):
 
@@ -61,6 +67,7 @@ class Screensaver(xbmcgui.WindowXMLDialog):
 
     def exit(self):
         self.abort_requested = True
+        raise ExitPlease
         self.exit_monitor = None
         self.log('exit signalled')
 
@@ -85,7 +92,7 @@ class Screensaver(xbmcgui.WindowXMLDialog):
                 downloaded_image.close()
                 image_on_web.close()
             else:
-                return False    
+                return False
         except:
             return False
         return True
