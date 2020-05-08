@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <setting id="refresh_interval" type="int" label="32000" default="10"/>
+    <setting id="refresh_interval" type="number" label="32000" default="10"/>
 </settings>

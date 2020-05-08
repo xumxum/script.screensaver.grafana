@@ -21,13 +21,23 @@ import xbmcaddon
 import xbmcgui
 import xbmc
 
+#import requests
+import urllib
+
 addon = xbmcaddon.Addon()
 addon_name = addon.getAddonInfo('name')
 addon_path = addon.getAddonInfo('path')
 
 
-#CONTROL_MOVING_BACKGROUND = 1
+CONTROL_BACKGROUND = 1
 #CONTROL_ANIMATED_RAINBOW = 2
+
+TMP_IMG="/tmp/grafana.png"
+URL = 'http://nuc:3000/render/d/q4jAnx6Zk/zeenet?from=now-3h&to=now&width=1920&height=1080'
+
+#Since grafan stores by default all temporary rendered data for 24h, might be a good idea to lower that time to 1m for example
+#[[paths]]
+#    temp_data_lifetime=1m
 
 
 class Screensaver(xbmcgui.WindowXMLDialog):
@@ -42,7 +52,9 @@ class Screensaver(xbmcgui.WindowXMLDialog):
 
     def onInit(self):
         self.exit_monitor = self.ExitMonitor(self.exit)
+        self.abort_requested = False
         self.handle_settings()
+        self.mainLoop()
 
     def handle_settings(self):
         self.interval = addon.getSetting('refresh_interval')
@@ -50,12 +62,48 @@ class Screensaver(xbmcgui.WindowXMLDialog):
     def exit(self):
         self.abort_requested = True
         self.exit_monitor = None
-        self.log('exit')
+        self.log('exit signalled')
+
+        
+    #doesnt work in python 2 on ubuntu?..
+    def getLatestRendering(self):
+        page = requests.get(URL)
+        content = page.content
+    
+        with open(TMP_IMG, 'wb') as fd:
+            fd.write(content)
+            fd.close()
+
+    #python 2 compatible..
+    def getLatestRendering2(self):
+        try:
+            image_on_web = urllib.urlopen(URL)
+            if image_on_web.headers.maintype == 'image':
+                buf = image_on_web.read()
+                downloaded_image = file(TMP_IMG, "wb")
+                downloaded_image.write(buf)
+                downloaded_image.close()
+                image_on_web.close()
+            else:
+                return False    
+        except:
+            return False
+        return True
+
+
+    def mainLoop(self):
+        self.image1 = self.getControl(CONTROL_BACKGROUND)
+        #while (not self.exit_monitor.abortRequested()):
+        self.log('Grafana mainloop')
+        while (not self.abort_requested):
+            #print("Getting rendering")
+            self.getLatestRendering2()
+            self.image1.setImage(TMP_IMG,False)
+            xbmc.sleep(1000)
+        
+        self.log('exited mainLoop')
         self.close()
-        
-    #def mainLoop(self):
-        #do some shit
-        
+                    
         
 
     def log(self, msg):
