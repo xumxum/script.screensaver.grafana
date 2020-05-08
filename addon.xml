@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="script.screensaver.grafana" name="Grafana" version="0.1.0" provider-name="Xumxum cumxum@yahoo.com">
+    <requires>
+        <import addon="xbmc.python" version="2.1.0"/>
+    </requires>
+    <extension point="xbmc.ui.screensaver" library="screensaver.py" />
+    <extension point="xbmc.addon.metadata">
+        <platform>all</platform>
+        <language/>
+        <website></website>
+        <source>https://github.com/xumxum/script.screensaver.grafana</source>
+        <forum>http://forum.xbmc.org/showthread.php?tid=168442</forum>
+        <email>cumxum@yahoo.com</email>
+        <summary lang="en">Grafana dashboard Screensaver</summary>
+        <description lang="en">Grafana dashboard Screensaver</description>
+    </extension>
+</addon>
