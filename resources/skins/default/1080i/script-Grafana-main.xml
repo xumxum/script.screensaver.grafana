@@ -7,7 +7,7 @@
             <posy>0</posy>
             <width>1920</width>
             <height>1080</height>
-            <texture>grafana2.png</texture>
+            <texture>grafana_1080.png</texture>
         </control>        
     </controls>
 </window>
