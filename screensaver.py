@@ -121,7 +121,7 @@ class Screensaver(xbmcgui.WindowXMLDialog):
 
             if self.getLatestRendering2():
                 self.image1.setImage(self.tempPicture,False)
-                xbmc.sleep(1000)
+                xbmc.sleep(5000)
 
                 os.remove(self.tempPicture)
             else:
