@@ -64,6 +64,7 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         self.abort_requested = False
         self.tempPicture = ""
         self.tempPathOs = xbmc.translatePath(TMP_PATH)
+        self.tempPathOs = "/tmp/"
         self.image1 = self.getControl(CONTROL_BACKGROUND)
 
         self.handle_settings()
