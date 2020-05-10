@@ -33,7 +33,7 @@ addon_path = addon.getAddonInfo('path')
 
 
 CONTROL_BACKGROUND = 1
-#CONTROL_ANIMATED_RAINBOW = 2
+
 
 #maybe put them in settings also?
 RENDER_WIDTH = '1920'
@@ -71,6 +71,8 @@ class Screensaver(xbmcgui.WindowXMLDialog):
 
     def handle_settings(self):
         self.interval = addon.getSetting('refresh_interval')
+        #ADDON.getSettingString('path')
+        #ADDON.getSettingInt('time')
 
     def exit(self):
         self.abort_requested = True
@@ -115,7 +117,7 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         while (not self.abort_requested):
             #setting same image will not refresh kodi strangely, didnt find a way to trigger reload , so we just generate new fname every time and delete
             self.tempPicture = self.tempPathOs + self.randomString() + ".png"
-            self.log( self.tempPicture)
+            #self.log( self.tempPicture)
 
             self.getLatestRendering2()
             self.image1.setImage(self.tempPicture,False)
