@@ -23,6 +23,9 @@ import xbmc
 
 #import requests
 import urllib
+import os
+import random
+import string
 
 addon = xbmcaddon.Addon()
 addon_name = addon.getAddonInfo('name')
@@ -36,15 +39,15 @@ CONTROL_BACKGROUND = 1
 RENDER_WIDTH = '1920'
 RENDER_HEIGHT = '1080'
 
-TMP_IMG="/tmp/grafana.png"
-URL = 'http://nuc:3000/render/d/q4jAnx6Zk/zeenet?from=now-3h&to=now&width=' + RENDER_WIDTH + '&height=' + RENDER_HEIGHT
+TMP_PATH = "special://temp/"
+#TMP_PATH = "/tmp/"
+
+URL = 'http://nuc:3000/render/d/q4jAnx6Zk/zeenet?from=now-15m&to=now&width=' + RENDER_WIDTH + '&height=' + RENDER_HEIGHT
 
 #Since grafan stores by default all temporary rendered data for 24h, might be a good idea to lower that time to 1m for example
 #[[paths]]
 #    temp_data_lifetime=1m
 
-class ExitPlease(Exception):
-    pass
 
 class Screensaver(xbmcgui.WindowXMLDialog):
 
@@ -59,6 +62,10 @@ class Screensaver(xbmcgui.WindowXMLDialog):
     def onInit(self):
         self.exit_monitor = self.ExitMonitor(self.exit)
         self.abort_requested = False
+        self.tempPicture = ""
+        self.tempPathOs = xbmc.translatePath(TMP_PATH)
+        self.image1 = self.getControl(CONTROL_BACKGROUND)
+
         self.handle_settings()
         self.mainLoop()
 
@@ -67,7 +74,6 @@ class Screensaver(xbmcgui.WindowXMLDialog):
 
     def exit(self):
         self.abort_requested = True
-        raise ExitPlease
         self.exit_monitor = None
         self.log('exit signalled')
 
@@ -87,7 +93,7 @@ class Screensaver(xbmcgui.WindowXMLDialog):
             image_on_web = urllib.urlopen(URL)
             if image_on_web.headers.maintype == 'image':
                 buf = image_on_web.read()
-                downloaded_image = file(TMP_IMG, "wb")
+                downloaded_image = file(self.tempPicture, "wb")
                 downloaded_image.write(buf)
                 downloaded_image.close()
                 image_on_web.close()
@@ -98,15 +104,24 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         return True
 
 
+    def randomString(self,stringLength=16):
+        letters = string.ascii_letters
+        return ''.join(random.choice(letters) for i in range(stringLength))   
+
+
     def mainLoop(self):
-        self.image1 = self.getControl(CONTROL_BACKGROUND)
-        #while (not self.exit_monitor.abortRequested()):
         self.log('Grafana mainloop')
+        
         while (not self.abort_requested):
-            #print("Getting rendering")
+            #setting same image will not refresh kodi strangely, didnt find a way to trigger reload , so we just generate new fname every time and delete
+            self.tempPicture = self.tempPathOs + self.randomString() + ".png"
+            self.log( self.tempPicture)
+
             self.getLatestRendering2()
-            self.image1.setImage(TMP_IMG,False)
+            self.image1.setImage(self.tempPicture,False)
             xbmc.sleep(1000)
+            
+            os.remove(self.tempPicture)
         
         self.log('exited mainLoop')
         self.close()

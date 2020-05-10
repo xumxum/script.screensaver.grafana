@@ -3,11 +3,17 @@
 
 import urllib
 import time
+import random
+import string
 
 from pprint import pprint
 
-URL = 'http://nuc:3000/render/d/q4jAnx6Zk/zeenet?from=now-3h&to=now&width=1920&height=1080'
-TMP_IMG = "grafana.png"
+RENDER_WIDTH = '1920'
+RENDER_HEIGHT = '1080'
+
+TMP_IMG="/tmp/grafana.png"
+URL = 'http://nuc:3000/render/d/q4jAnx6Zk/zeenet?from=now-3h&to=now&width=' + RENDER_WIDTH + '&height=' + RENDER_HEIGHT
+
 
 def getLatestRendering2():
     try:
@@ -25,7 +31,9 @@ def getLatestRendering2():
     return True
 
     
-    
+def randomString(stringLength=16):
+    letters = string.ascii_letters
+    return ''.join(random.choice(letters) for i in range(stringLength))    
 
 def mainLoop():
     while True:
@@ -33,4 +41,8 @@ def mainLoop():
         getLatestRendering2()
         time.sleep(1)
         
-mainLoop()
+#mainLoop()
+fname = "special://temp/" + randomString() + ".png"
+print(fname)
+
+getLatestRendering2()
