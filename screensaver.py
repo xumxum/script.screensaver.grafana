@@ -64,7 +64,7 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         self.abort_requested = False
         self.tempPicture = ""
         self.tempPathOs = xbmc.translatePath(TMP_PATH)
-        self.tempPathOs = "/tmp/"
+        #self.tempPathOs = "/tmp/"
         self.image1 = self.getControl(CONTROL_BACKGROUND)
 
         self.handle_settings()
@@ -117,12 +117,16 @@ class Screensaver(xbmcgui.WindowXMLDialog):
 
         while (not self.abort_requested):
             #setting same image will not refresh kodi strangely, didnt find a way to trigger reload , so we just generate new fname every time and delete
-            self.tempPicture = self.tempPathOs + self.randomString() + ".png"
-            self.log( self.tempPicture)
+            self.tempPicture = self.randomString() + ".png"
+            #kodi accepts only special:// files while write and remote need absolute path..
+            kodi_fname = TMP_PATH + self.tempPicture
+            self.tempPicture = self.tempPathOs + self.tempPicture
+
+            #self.log( self.tempPicture)
 
             if self.getLatestRendering2():
-                self.log("downloaded ok")
-                self.image1.setImage(self.tempPicture,False)
+                #self.log("downloaded ok")
+                self.image1.setImage(kodi_fname,False)
                 xbmc.sleep(5000)
 
                 os.remove(self.tempPicture)
