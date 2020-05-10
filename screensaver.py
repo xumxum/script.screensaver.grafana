@@ -117,13 +117,15 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         while (not self.abort_requested):
             #setting same image will not refresh kodi strangely, didnt find a way to trigger reload , so we just generate new fname every time and delete
             self.tempPicture = self.tempPathOs + self.randomString() + ".png"
-            #self.log( self.tempPicture)
+            self.log( self.tempPicture)
 
-            self.getLatestRendering2()
-            self.image1.setImage(self.tempPicture,False)
-            xbmc.sleep(1000)
+            if self.getLatestRendering2():
+                self.image1.setImage(self.tempPicture,False)
+                xbmc.sleep(1000)
 
-            os.remove(self.tempPicture)
+                os.remove(self.tempPicture)
+            else:
+                self.log("Could not download render image")
 
         self.log('exited mainLoop')
         self.close()
