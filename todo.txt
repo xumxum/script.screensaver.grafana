@@ -1,0 +1,8 @@
+- Refresh interval not working
+   since render can take few seconds, get start time and then sleep remaining with 100ms intervals...
+
+- URL should be in settings I guess? or a different file later on
+
+- have multiple dashboard support potentially and cycle through them..
+
+- fix slow exit, need a find a way to render in different thread that can be instantly interrupted..
