@@ -42,7 +42,7 @@ RENDER_HEIGHT = '1080'
 TMP_PATH = "special://temp/"
 #TMP_PATH = "/tmp/"
 
-URL = 'http://nuc:3000/render/d/q4jAnx6Zk/zeenet?from=now-15m&to=now&width=' + RENDER_WIDTH + '&height=' + RENDER_HEIGHT
+URL = 'http://nuc:3000/render/d/q4jAnx6Zk/zeenet?from=now-1h&to=now&width=' + RENDER_WIDTH + '&height=' + RENDER_HEIGHT
 
 #Since grafan stores by default all temporary rendered data for 24h, might be a good idea to lower that time to 1m for example
 #[[paths]]
@@ -79,12 +79,12 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         self.exit_monitor = None
         self.log('exit signalled')
 
-        
+
     #doesnt work in python 2 on ubuntu?..
     def getLatestRendering(self):
         page = requests.get(URL)
         content = page.content
-    
+
         with open(TMP_IMG, 'wb') as fd:
             fd.write(content)
             fd.close()
@@ -108,12 +108,12 @@ class Screensaver(xbmcgui.WindowXMLDialog):
 
     def randomString(self,stringLength=16):
         letters = string.ascii_letters
-        return ''.join(random.choice(letters) for i in range(stringLength))   
+        return ''.join(random.choice(letters) for i in range(stringLength))
 
 
     def mainLoop(self):
         self.log('Grafana mainloop')
-        
+
         while (not self.abort_requested):
             #setting same image will not refresh kodi strangely, didnt find a way to trigger reload , so we just generate new fname every time and delete
             self.tempPicture = self.tempPathOs + self.randomString() + ".png"
@@ -122,13 +122,13 @@ class Screensaver(xbmcgui.WindowXMLDialog):
             self.getLatestRendering2()
             self.image1.setImage(self.tempPicture,False)
             xbmc.sleep(1000)
-            
+
             os.remove(self.tempPicture)
-        
+
         self.log('exited mainLoop')
         self.close()
-                    
-        
+
+
 
     def log(self, msg):
         xbmc.log(u'Grafana Screensaver: %s' % msg)
