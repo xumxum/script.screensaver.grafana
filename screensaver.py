@@ -39,8 +39,9 @@ CONTROL_BACKGROUND = 1
 RENDER_WIDTH = '1920'
 RENDER_HEIGHT = '1080'
 
-TMP_PATH = "special://temp/"
-#TMP_PATH = "/tmp/"
+#doesnt work in this format but it should..
+#TMP_PATH = "special://temp/"
+TMP_PATH = "/tmp/"
 
 URL = 'http://nuc:3000/render/d/q4jAnx6Zk/zeenet?from=now-1h&to=now&width=' + RENDER_WIDTH + '&height=' + RENDER_HEIGHT
 
@@ -63,8 +64,8 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         self.exit_monitor = self.ExitMonitor(self.exit)
         self.abort_requested = False
         self.tempPicture = ""
-        self.tempPathOs = xbmc.translatePath(TMP_PATH)
-        #self.tempPathOs = "/tmp/"
+        #self.tempPathOs = xbmc.translatePath(TMP_PATH)
+        self.tempPathOs = TMP_PATH
         self.image1 = self.getControl(CONTROL_BACKGROUND)
 
         self.handle_settings()
@@ -119,15 +120,16 @@ class Screensaver(xbmcgui.WindowXMLDialog):
             #setting same image will not refresh kodi strangely, didnt find a way to trigger reload , so we just generate new fname every time and delete
             self.tempPicture = self.randomString() + ".png"
             #kodi accepts only special:// files while write and remote need absolute path..
-            kodi_fname = TMP_PATH + self.tempPicture
+            #kodi_fname = TMP_PATH + self.tempPicture
             self.tempPicture = self.tempPathOs + self.tempPicture
 
             #self.log( self.tempPicture)
 
             if self.getLatestRendering2():
                 #self.log("downloaded ok")
-                self.image1.setImage(kodi_fname,False)
-                xbmc.sleep(5000)
+                self.image1.setImage(self.tempPathOs,False)
+
+                xbmc.sleep(1000)
 
                 os.remove(self.tempPicture)
             else:
