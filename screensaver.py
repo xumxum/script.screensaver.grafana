@@ -43,7 +43,7 @@ RENDER_HEIGHT = '1080'
 #TMP_PATH = "special://temp/"
 TMP_PATH = "/tmp/"
 
-URL = 'http://nuc:3000/render/d/q4jAnx6Zk/zeenet?from=now-1h&to=now&width=' + RENDER_WIDTH + '&height=' + RENDER_HEIGHT
+URL_SIZE_SUFFIX = '&width=' + RENDER_WIDTH + '&height=' + RENDER_HEIGHT
 
 #Since grafan stores by default all temporary rendered data for 24h, might be a good idea to lower that time to 1m for example
 #[[paths]]
@@ -64,17 +64,39 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         self.exit_monitor = self.ExitMonitor(self.exit)
         self.abort_requested = False
         self.tempPicture = ""
+        self.indexUrl = 0
         #self.tempPathOs = xbmc.translatePath(TMP_PATH)
         self.tempPathOs = TMP_PATH
         self.image1 = self.getControl(CONTROL_BACKGROUND)
 
         self.handle_settings()
-        self.mainLoop()
+        self.urls = self.readUrls()
+
+        if self.urls:
+            for i,u in enumerate(self.urls):
+                self.log("url: ")
+                self.log(u)
+                self.urls[i] = u + URL_SIZE_SUFFIX
+
+                self.log(self.urls[i])
+
+            self.mainLoop()
+
 
     def handle_settings(self):
-        self.interval = addon.getSetting('refresh_interval')
+        self.interval = int(addon.getSetting('refresh_interval'))
         #ADDON.getSettingString('path')
         #ADDON.getSettingInt('time')
+
+    def readUrls(self):
+        try:
+            urlsFileName = '~/' + 'urls.txt'
+            self.log(urlsFileName)
+            with open('urls.txt', 'r') as f:
+                return f.read().splitlines();
+        except:
+            self.log("Could not read urls.txt file or file doesn't exist")
+            return []
 
     def exit(self):
         self.abort_requested = True
@@ -82,19 +104,14 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         self.log('exit signalled')
 
 
-    #doesnt work in python 2 on ubuntu?..
-    def getLatestRendering(self):
-        page = requests.get(URL)
-        content = page.content
-
-        with open(TMP_IMG, 'wb') as fd:
-            fd.write(content)
-            fd.close()
 
     #python 2 compatible..
     def getLatestRendering2(self):
         try:
-            image_on_web = urllib.urlopen(URL)
+            url = self.urls[self.indexUrl]
+            self.log(url)
+            image_on_web = urllib.urlopen(url)
+
             if image_on_web.headers.maintype == 'image':
                 buf = image_on_web.read()
                 downloaded_image = file(self.tempPicture, "wb")
@@ -115,6 +132,7 @@ class Screensaver(xbmcgui.WindowXMLDialog):
 
     def mainLoop(self):
         self.log('Grafana mainloop')
+        self.indexUrl = 0
 
         while (not self.abort_requested):
             #setting same image will not refresh kodi strangely, didnt find a way to trigger reload , so we just generate new fname every time and delete
@@ -129,11 +147,20 @@ class Screensaver(xbmcgui.WindowXMLDialog):
                 #self.log("downloaded ok")
                 self.image1.setImage(self.tempPicture,False)
 
-                xbmc.sleep(1000)
+                #small intervals so it will exit quickly when needed
+                #except when rendering
+                sleepCycles = self.interval * 10;
+                while ((sleepCycles > 0) and (not self.abort_requested)):
+                    xbmc.sleep(100)
+                    sleepCycles = sleepCycles - 1
+                    #self.log(sleepCycles)
 
                 os.remove(self.tempPicture)
             else:
                 self.log("Could not download render image")
+
+            #go to next url
+            self.indexUrl = (self.indexUrl + 1) % len(self.urls)
 
         self.log('exited mainLoop')
         self.close()
