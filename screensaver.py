@@ -69,33 +69,36 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         self.tempPathOs = TMP_PATH
         self.image1 = self.getControl(CONTROL_BACKGROUND)
 
-        self.handle_settings()
+        self.read_settings()
         self.urls = self.readUrls()
 
         if self.urls:
             for i,u in enumerate(self.urls):
-                self.log("url: ")
                 self.log(u)
                 self.urls[i] = u + URL_SIZE_SUFFIX
+                #self.log(self.urls[i])
 
-                self.log(self.urls[i])
-
-            self.mainLoop()
+        self.mainLoop()
 
 
-    def handle_settings(self):
+    def read_settings(self):
         self.interval = int(addon.getSetting('refresh_interval'))
+        self.urls_file = addon.getSetting('urls_file')
         #ADDON.getSettingString('path')
         #ADDON.getSettingInt('time')
 
     def readUrls(self):
         try:
-            urlsFileName = '~/' + 'urls.txt'
+            urlsFileName = self.urls_file
             self.log(urlsFileName)
-            with open('urls.txt', 'r') as f:
-                return f.read().splitlines();
-        except:
-            self.log("Could not read urls.txt file or file doesn't exist")
+            with open(urlsFileName, 'r') as f:
+                self.log("Opened urls file")
+                return f.read().splitlines()
+
+        except Exception as e:
+            msg = u'Could not read url file: {}, exception: {}'.format( urlsFileName, e)
+            self.log(msg)
+            xbmc.executebuiltin(u"Notification('Grafan Screensaver','%s')" % msg)
             return []
 
     def exit(self):
@@ -104,10 +107,12 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         self.log('exit signalled')
 
 
-
     #python 2 compatible..
-    def getLatestRendering2(self):
+    def getLatestRendering(self):
         try:
+            if not self.urls:
+                return False
+
             url = self.urls[self.indexUrl]
             self.log(url)
             image_on_web = urllib.urlopen(url)
@@ -129,6 +134,15 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         letters = string.ascii_letters
         return ''.join(random.choice(letters) for i in range(stringLength))
 
+    def sleepUntilNextSlide(self):
+        #small intervals so it will exit quickly when needed
+        #except when rendering
+        sleepCycles = self.interval * 10;
+        while ((sleepCycles > 0) and (not self.abort_requested)):
+            xbmc.sleep(100)
+            sleepCycles = sleepCycles - 1
+            #self.log(sleepCycles)
+
 
     def mainLoop(self):
         self.log('Grafana mainloop')
@@ -143,24 +157,22 @@ class Screensaver(xbmcgui.WindowXMLDialog):
 
             #self.log( self.tempPicture)
 
-            if self.getLatestRendering2():
+            render_ok = self.getLatestRendering()
+
+            if render_ok:
                 #self.log("downloaded ok")
                 self.image1.setImage(self.tempPicture,False)
-
-                #small intervals so it will exit quickly when needed
-                #except when rendering
-                sleepCycles = self.interval * 10;
-                while ((sleepCycles > 0) and (not self.abort_requested)):
-                    xbmc.sleep(100)
-                    sleepCycles = sleepCycles - 1
-                    #self.log(sleepCycles)
-
-                os.remove(self.tempPicture)
             else:
                 self.log("Could not download render image")
 
+            self.sleepUntilNextSlide()
+
+            if render_ok:
+                os.remove(self.tempPicture)
+
             #go to next url
-            self.indexUrl = (self.indexUrl + 1) % len(self.urls)
+            if self.urls:
+                self.indexUrl = (self.indexUrl + 1) % len(self.urls)
 
         self.log('exited mainLoop')
         self.close()
