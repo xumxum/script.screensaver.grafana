@@ -70,7 +70,7 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         self.image1 = self.getControl(CONTROL_BACKGROUND)
 
         self.read_settings()
-        self.urls = self.readUrls()
+        self.readUrls()
 
         if self.urls:
             for i,u in enumerate(self.urls):
@@ -89,11 +89,20 @@ class Screensaver(xbmcgui.WindowXMLDialog):
 
     def readUrls(self):
         try:
+            rez = []
             urlsFileName = self.urls_file
             self.log(urlsFileName)
             with open(urlsFileName, 'r') as f:
                 self.log("Opened urls file")
-                return f.read().splitlines()
+                rez = f.read().splitlines()
+
+                #add width and height , maybe should check first
+                for i,u in enumerate(rez):
+                    rez[i] = u + URL_SIZE_SUFFIX
+                    self.log(u'added with and height to url: {}'.format(rez[i]))
+
+                self.urls = rez
+
 
         except Exception as e:
             msg = u'Could not read url file: {}, exception: {}'.format( urlsFileName, e)
@@ -173,6 +182,9 @@ class Screensaver(xbmcgui.WindowXMLDialog):
             #go to next url
             if self.urls:
                 self.indexUrl = (self.indexUrl + 1) % len(self.urls)
+                #resync urls text file every cycle
+                if self.indexUrl == 0:
+                    self.readUrls()
 
         self.log('exited mainLoop')
         self.close()
