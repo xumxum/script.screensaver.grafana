@@ -26,6 +26,7 @@ import urllib
 import os
 import random
 import string
+import multiprocessing
 
 addon = xbmcaddon.Addon()
 addon_name = addon.getAddonInfo('name')
@@ -48,6 +49,22 @@ URL_SIZE_SUFFIX = '&width=' + RENDER_WIDTH + '&height=' + RENDER_HEIGHT
 #Since grafan stores by default all temporary rendered data for 24h, might be a good idea to lower that time to 1m for example
 #[[paths]]
 #    temp_data_lifetime=1m
+
+def getLatestRendering2(url, tempPicture):
+    try:
+
+        image_on_web = urllib.urlopen(url)
+        if image_on_web.headers.maintype == 'image':
+            buf = image_on_web.read()
+            downloaded_image = file(tempPicture, "wb")
+            downloaded_image.write(buf)
+            downloaded_image.close()
+            image_on_web.close()
+        else:
+            return False
+    except:
+        return False
+    return True
 
 
 class Screensaver(xbmcgui.WindowXMLDialog):
@@ -124,10 +141,12 @@ class Screensaver(xbmcgui.WindowXMLDialog):
 
             url = self.urls[self.indexUrl]
             self.log(url)
+            self.log('before urlopen')
             image_on_web = urllib.urlopen(url)
-
+            self.log('before read')
             if image_on_web.headers.maintype == 'image':
                 buf = image_on_web.read()
+                self.log('after read')
                 downloaded_image = file(self.tempPicture, "wb")
                 downloaded_image.write(buf)
                 downloaded_image.close()
@@ -150,6 +169,10 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         while ((sleepCycles > 0) and (not self.abort_requested)):
             xbmc.sleep(100)
             sleepCycles = sleepCycles - 1
+            if not self.process.is_alive():
+                self.image1.setImage(self.tempPicture,False)
+                self.process.join()
+
             #self.log(sleepCycles)
 
 
@@ -166,18 +189,25 @@ class Screensaver(xbmcgui.WindowXMLDialog):
 
             #self.log( self.tempPicture)
 
-            render_ok = self.getLatestRendering()
+            #render_ok = self.getLatestRendering()
 
-            if render_ok:
-                #self.log("downloaded ok")
-                self.image1.setImage(self.tempPicture,False)
-            else:
-                self.log("Could not download render image")
+            if self.urls:
+                url = self.urls[self.indexUrl]
+                self.process = multiprocessing.Process(target=getLatestRendering2, args=(url, self.tempPicture,))
+                self.process.start()
+
+            # if render_ok:
+            #     #self.log("downloaded ok")
+            #     self.image1.setImage(self.tempPicture,False)
+            # else:
+            #     self.log("Could not download render image")
 
             self.sleepUntilNextSlide()
 
-            if render_ok:
+            try:
                 os.remove(self.tempPicture)
+            except:
+                pass
 
             #go to next url
             if self.urls:
@@ -187,6 +217,10 @@ class Screensaver(xbmcgui.WindowXMLDialog):
                     self.readUrls()
 
         self.log('exited mainLoop')
+
+        if self.process.is_alive():
+            self.process.terminate()
+
         self.close()
 
 
