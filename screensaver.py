@@ -21,7 +21,6 @@ import xbmcaddon
 import xbmcgui
 import xbmc
 
-#import requests
 import urllib
 import os
 import random
@@ -133,30 +132,6 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         self.log('exit signalled')
 
 
-    #python 2 compatible..
-    def getLatestRendering(self):
-        try:
-            if not self.urls:
-                return False
-
-            url = self.urls[self.indexUrl]
-            self.log(url)
-            self.log('before urlopen')
-            image_on_web = urllib.urlopen(url)
-            self.log('before read')
-            if image_on_web.headers.maintype == 'image':
-                buf = image_on_web.read()
-                self.log('after read')
-                downloaded_image = file(self.tempPicture, "wb")
-                downloaded_image.write(buf)
-                downloaded_image.close()
-                image_on_web.close()
-            else:
-                return False
-        except:
-            return False
-        return True
-
 
     def randomString(self,stringLength=16):
         letters = string.ascii_letters
@@ -196,11 +171,6 @@ class Screensaver(xbmcgui.WindowXMLDialog):
                 self.process = multiprocessing.Process(target=getLatestRendering2, args=(url, self.tempPicture,))
                 self.process.start()
 
-            # if render_ok:
-            #     #self.log("downloaded ok")
-            #     self.image1.setImage(self.tempPicture,False)
-            # else:
-            #     self.log("Could not download render image")
 
             self.sleepUntilNextSlide()
 
