@@ -145,7 +145,8 @@ class Screensaver(xbmcgui.WindowXMLDialog):
             xbmc.sleep(100)
             sleepCycles = sleepCycles - 1
             if not self.process.is_alive():
-                self.image1.setImage(self.tempPicture,False)
+                if os.path.exists(self.tempPicture):
+                    self.image1.setImage(self.tempPicture,False)
                 self.process.join()
 
             #self.log(sleepCycles)
