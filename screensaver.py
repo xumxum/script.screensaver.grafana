@@ -184,8 +184,8 @@ class Screensaver(xbmcgui.WindowXMLDialog):
             if self.urls:
                 self.indexUrl = (self.indexUrl + 1) % len(self.urls)
                 #resync urls text file every cycle
-                if self.indexUrl == 0:
-                    self.readUrls()
+                #if self.indexUrl == 0:
+                #    self.readUrls()
 
         self.log('exited mainLoop')
 
