@@ -43,7 +43,9 @@ RENDER_HEIGHT = '1080'
 #TMP_PATH = "special://temp/"
 TMP_PATH = "/tmp/"
 
-URL_SIZE_SUFFIX = '&width=' + RENDER_WIDTH + '&height=' + RENDER_HEIGHT
+#enable for grafana renderer..
+#URL_SIZE_SUFFIX = '&width=' + RENDER_WIDTH + '&height=' + RENDER_HEIGHT
+URL_SIZE_SUFFIX = ''
 
 #Since grafan stores by default all temporary rendered data for 24h, might be a good idea to lower that time to 1m for example
 #[[paths]]
