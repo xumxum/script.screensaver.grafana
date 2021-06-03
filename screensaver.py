@@ -26,6 +26,7 @@ import os
 import random
 import string
 import multiprocessing
+from time import *
 
 addon = xbmcaddon.Addon()
 addon_name = addon.getAddonInfo('name')
@@ -139,19 +140,30 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         letters = string.ascii_letters
         return ''.join(random.choice(letters) for i in range(stringLength))
 
+
+    #wait min timeout or unti process finished running
     def sleepUntilNextSlide(self):
         #small intervals so it will exit quickly when needed
         #except when rendering
-        sleepCycles = self.interval * 10;
-        while ((sleepCycles > 0) and (not self.abort_requested)):
+        start_time = time()
+
+        while not self.abort_requested:
             xbmc.sleep(100)
-            sleepCycles = sleepCycles - 1
+
+            #if rendering done, set the image asap
             if not self.process.is_alive():
                 if os.path.exists(self.tempPicture):
                     self.image1.setImage(self.tempPicture,False)
+                    #give some time to set it..otherwise we delete it immediatly when we return
+                    #and kodi doesnt have time to set it
+                    #maybe shold have a queue of files and delete older ones...
+                    xbmc.sleep(100)
                 self.process.join()
 
-            #self.log(sleepCycles)
+            #wait done if time expered & rendering done
+            if (time() - start_time >= self.interval) and ( not self.process.is_alive() ):
+                #time passed and renering process process finished running
+                break
 
 
     def mainLoop(self):
