@@ -45,8 +45,8 @@ RENDER_HEIGHT = '1080'
 TMP_PATH = "/tmp/"
 
 #enable for grafana renderer..
-#URL_SIZE_SUFFIX = '&width=' + RENDER_WIDTH + '&height=' + RENDER_HEIGHT
-URL_SIZE_SUFFIX = ''
+URL_SIZE_SUFFIX = '&width=' + RENDER_WIDTH + '&height=' + RENDER_HEIGHT
+#URL_SIZE_SUFFIX = ''
 
 #Since grafan stores by default all temporary rendered data for 24h, might be a good idea to lower that time to 1m for example
 #[[paths]]
@@ -113,12 +113,13 @@ class Screensaver(xbmcgui.WindowXMLDialog):
             self.log(urlsFileName)
             with open(urlsFileName, 'r') as f:
                 self.log("Opened urls file")
-                rez = f.read().splitlines()
+                urlLines = f.read().splitlines()
 
                 #add width and height , maybe should check first
-                for i,u in enumerate(rez):
-                    rez[i] = u + URL_SIZE_SUFFIX
-                    self.log(u'added with and height to url: {}'.format(rez[i]))
+                for i,u in enumerate(urlLines):
+                    if not u.startswith('#'):
+                        rez.append(u)
+                        self.log(u'loaded url: {}'.format(rez[-1]))
 
                 self.urls = rez
 
