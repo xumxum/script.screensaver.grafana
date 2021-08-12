@@ -27,6 +27,7 @@ import random
 import string
 import multiprocessing
 from time import *
+import subprocess
 
 addon = xbmcaddon.Addon()
 addon_name = addon.getAddonInfo('name')
@@ -52,9 +53,21 @@ URL_SIZE_SUFFIX = '&width=' + RENDER_WIDTH + '&height=' + RENDER_HEIGHT
 #[[paths]]
 #    temp_data_lifetime=1m
 
+def is_tv_on():
+    TV_ON_EXE='/work/zee/tools/is_tv_on/is_tv_on.py'
+    #if no exe to say tv is on..assume it's ON
+    if not os.path.exists(TV_ON_EXE):
+        return True
+    status=subprocess.check_output([TV_ON_EXE]).strip()
+    if status == 'ok':
+        return True
+    return False
+
 def getLatestRendering2(url, tempPicture):
     try:
-
+        if not is_tv_on():
+            return False
+            
         image_on_web = urllib.urlopen(url)
         if image_on_web.headers.maintype == 'image':
             buf = image_on_web.read()
