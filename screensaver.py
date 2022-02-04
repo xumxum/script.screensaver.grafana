@@ -21,7 +21,7 @@ import xbmcaddon
 import xbmcgui
 import xbmc
 
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import os
 import random
 import string
@@ -68,7 +68,7 @@ def getLatestRendering2(url, tempPicture):
         if not is_tv_on():
             return False
             
-        image_on_web = urllib.urlopen(url)
+        image_on_web = urllib.request.urlopen(url)
         if image_on_web.headers.maintype == 'image':
             buf = image_on_web.read()
             downloaded_image = file(tempPicture, "wb")
@@ -132,15 +132,15 @@ class Screensaver(xbmcgui.WindowXMLDialog):
                 for i,u in enumerate(urlLines):
                     if not u.startswith('#'):
                         rez.append(u)
-                        self.log(u'loaded url: {}'.format(rez[-1]))
+                        self.log('loaded url: {}'.format(rez[-1]))
 
                 self.urls = rez
 
 
         except Exception as e:
-            msg = u'Could not read url file: {}, exception: {}'.format( urlsFileName, e)
+            msg = 'Could not read url file: {}, exception: {}'.format( urlsFileName, e)
             self.log(msg)
-            xbmc.executebuiltin(u"Notification('Grafan Screensaver','%s')" % msg)
+            xbmc.executebuiltin("Notification('Grafan Screensaver','%s')" % msg)
             return []
 
     def exit(self):
@@ -225,7 +225,7 @@ class Screensaver(xbmcgui.WindowXMLDialog):
 
 
     def log(self, msg):
-        xbmc.log(u'Grafana Screensaver: %s' % msg)
+        xbmc.log('Grafana Screensaver: %s' % msg)
 
 
 if __name__ == '__main__':
