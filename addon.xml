@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.screensaver.grafana" name="Grafana" version="2.0.1" provider-name="Xumxum cumxum@yahoo.com">
+<addon id="script.screensaver.grafana" name="Grafana" version="2.0.3" provider-name="Xumxum cumxum@yahoo.com">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
     </requires>

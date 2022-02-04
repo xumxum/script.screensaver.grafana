@@ -58,28 +58,10 @@ def is_tv_on():
     #if no exe to say tv is on..assume it's ON
     if not os.path.exists(TV_ON_EXE):
         return True
-    status=subprocess.check_output([TV_ON_EXE]).strip()
+    status=subprocess.check_output([TV_ON_EXE]).decode('utf-8').strip()
     if status == 'ok':
         return True
     return False
-
-# def getLatestRendering2(url, tempPicture):
-#     try:
-#         if not is_tv_on():
-#             return False
-#
-#         image_on_web = urllib.request.urlopen(url)
-#         if image_on_web.headers.maintype == 'image':
-#             buf = image_on_web.read()
-#             downloaded_image = file(tempPicture, "wb")
-#             downloaded_image.write(buf)
-#             downloaded_image.close()
-#             image_on_web.close()
-#         else:
-#             return False
-#     except:
-#         return False
-#     return True
 
 
 def download_image(url, outfile):
@@ -202,6 +184,7 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         self.log('Grafana mainloop')
         self.indexUrl = 0
         self.previoustempPicture = None
+        self.tempPicture = None
 
         while (not self.abort_requested):
             # #setting same image will not refresh kodi strangely, didnt find a way to trigger reload , so we just generate new fname every time and delete
@@ -237,18 +220,18 @@ class Screensaver(xbmcgui.WindowXMLDialog):
 
 
 
-            if self.urls:
+            if self.urls and is_tv_on():
                 url = self.urls[self.indexUrl]
 
                 #setting same image will not refresh kodi strangely, didnt find a way to trigger reload , so we just generate new fname every time and delete
                 self.tempPicture = self.tempPathOs + self.randomString() + ".png"
-                self.log( self.tempPicture)
+                #self.log( self.tempPicture)
 
                 render_ok = download_image(url, self.tempPicture)
-                self.log(f'Render returned: {render_ok}')
+                #self.log(f'Render returned: {render_ok}')
 
                 if os.path.exists(self.tempPicture):
-                    self.log(f'Setting image: {self.tempPicture}')
+                    #self.log(f'Setting image: {self.tempPicture}')
                     self.image1.setImage(self.tempPicture,False)
 
             #remove previous tmpPicture
