@@ -63,22 +63,27 @@ def is_tv_on():
         return True
     return False
 
-def getLatestRendering2(url, tempPicture):
-    try:
-        if not is_tv_on():
-            return False
-            
-        image_on_web = urllib.request.urlopen(url)
-        if image_on_web.headers.maintype == 'image':
-            buf = image_on_web.read()
-            downloaded_image = file(tempPicture, "wb")
-            downloaded_image.write(buf)
-            downloaded_image.close()
-            image_on_web.close()
-        else:
-            return False
-    except:
-        return False
+# def getLatestRendering2(url, tempPicture):
+#     try:
+#         if not is_tv_on():
+#             return False
+#
+#         image_on_web = urllib.request.urlopen(url)
+#         if image_on_web.headers.maintype == 'image':
+#             buf = image_on_web.read()
+#             downloaded_image = file(tempPicture, "wb")
+#             downloaded_image.write(buf)
+#             downloaded_image.close()
+#             image_on_web.close()
+#         else:
+#             return False
+#     except:
+#         return False
+#     return True
+
+
+def download_image(url, outfile):
+    urllib.request.urlretrieve(url,outfile)
     return True
 
 
@@ -180,34 +185,81 @@ class Screensaver(xbmcgui.WindowXMLDialog):
                 break
 
 
+    def sleepUntilNextSlide2(self):
+        #small intervals so it will exit quickly when needed
+        #except when rendering
+        start_time = time()
+
+        while not self.abort_requested:
+            xbmc.sleep(100)
+
+            #wait done if time expered & rendering done
+            if time() - start_time >= self.interval:
+                #time passed
+                break
+
     def mainLoop(self):
         self.log('Grafana mainloop')
         self.indexUrl = 0
+        self.previoustempPicture = None
 
         while (not self.abort_requested):
-            #setting same image will not refresh kodi strangely, didnt find a way to trigger reload , so we just generate new fname every time and delete
-            self.tempPicture = self.randomString() + ".png"
-            #kodi accepts only special:// files while write and remote need absolute path..
-            #kodi_fname = TMP_PATH + self.tempPicture
-            self.tempPicture = self.tempPathOs + self.tempPicture
+            # #setting same image will not refresh kodi strangely, didnt find a way to trigger reload , so we just generate new fname every time and delete
+            # self.tempPicture = self.randomString() + ".png"
+            # #kodi accepts only special:// files while write and remote need absolute path..
+            # #kodi_fname = TMP_PATH + self.tempPicture
+            # self.tempPicture = self.tempPathOs + self.tempPicture
+            #
+            # self.log( self.tempPicture)
 
-            #self.log( self.tempPicture)
-
+            #xbmc.sleep(1000)
             #render_ok = self.getLatestRendering()
+
+            # if self.urls:
+            #     url = self.urls[self.indexUrl]
+            #     self.process = multiprocessing.Process(target=getLatestRendering2, args=(url, self.tempPicture,))
+            #     self.process.start()
+            #
+            #
+            # self.sleepUntilNextSlide()
+            #
+            # try:
+            #     os.remove(self.tempPicture)
+            # except:
+            #     pass
+            #
+            # #go to next url
+            # if self.urls:
+            #     self.indexUrl = (self.indexUrl + 1) % len(self.urls)
+            #     #resync urls text file every cycle
+            #     if self.indexUrl == 0:
+            #         self.readUrls()
+
+
 
             if self.urls:
                 url = self.urls[self.indexUrl]
-                self.process = multiprocessing.Process(target=getLatestRendering2, args=(url, self.tempPicture,))
-                self.process.start()
 
+                #setting same image will not refresh kodi strangely, didnt find a way to trigger reload , so we just generate new fname every time and delete
+                self.tempPicture = self.tempPathOs + self.randomString() + ".png"
+                self.log( self.tempPicture)
 
-            self.sleepUntilNextSlide()
+                render_ok = download_image(url, self.tempPicture)
+                self.log(f'Render returned: {render_ok}')
 
+                if os.path.exists(self.tempPicture):
+                    self.log(f'Setting image: {self.tempPicture}')
+                    self.image1.setImage(self.tempPicture,False)
+
+            #remove previous tmpPicture
             try:
-                os.remove(self.tempPicture)
+                os.remove(self.previoustempPicture)
             except:
                 pass
 
+            self.sleepUntilNextSlide2()
+
+            self.previoustempPicture = self.tempPicture
             #go to next url
             if self.urls:
                 self.indexUrl = (self.indexUrl + 1) % len(self.urls)
@@ -215,10 +267,15 @@ class Screensaver(xbmcgui.WindowXMLDialog):
                 if self.indexUrl == 0:
                     self.readUrls()
 
+
         self.log('exited mainLoop')
 
-        if self.process.is_alive():
-            self.process.terminate()
+        try:
+            os.remove(self.previoustempPicture)
+        except:
+            pass
+        # if self.process.is_alive():
+        #     self.process.terminate()
 
         self.close()
 
@@ -236,4 +293,4 @@ if __name__ == '__main__':
     )
     screensaver.doModal()
     del screensaver
-    sys.modules.clear()
+    #sys.modules.clear()
