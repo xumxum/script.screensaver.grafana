@@ -1,0 +1,3 @@
+#grafana-plugin
+http://192.168.1.100:3000/render/d/9BS3sPyGk/dashboard1?orgId=1&refresh=5s&from=now-3h&to=now&kiosk
+http://192.168.1.100:3000/render/d/VLVPGnRMz/dashboard2?orgId=1&refresh=5s&from=now-3h&to=now&kiosk

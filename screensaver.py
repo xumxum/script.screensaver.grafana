@@ -89,8 +89,8 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         self.interval = int(addon.getSetting('refresh_interval'))
         self.urls_file = addon.getSetting('urls_file')
         self.tv_on_exe = addon.getSetting('tv_on_exe')
-        render_width = self.interval = int(addon.getSetting('render_width'))
-        render_height = self.interval = int(addon.getSetting('render_height'))
+        render_width = int(addon.getSetting('render_width'))
+        render_height = int(addon.getSetting('render_height'))
         self.url_size_suffix = '&width=' + str(render_width) + '&height=' + str(render_height)
 
     def readUrls(self):
@@ -188,26 +188,33 @@ class Screensaver(xbmcgui.WindowXMLDialog):
                     pass
 
     def mainloop(self):
-        #self.log('Grafana mainloop2')
+        self.log('Grafana mainloop')
         self.indexUrl = 0
         state = 'ST_WAITING' #ST_RENDERING
         start_time = 0 # force it to go directly to render
 
         while (not self.abort_requested):
-            self.log(f'state = {state}')
+            #self.log(f'state = {state} start_time: {start_time} time: {time()} interval: {self.interval}')
             if state == 'ST_WAITING':
                 #waiting for a time until we start the grafana dashboard download
                 if time() - start_time >= self.interval:
                     #we waited enough, start next download
+                    self.log('Wait over, lets see next')
                     if self.is_tv_on():
                         self.start_rendering()
                         state = 'ST_RENDERING'
                     else:
+                        self.log('Tv is not on, restart waiting')
                         #tv is not on, wait some more
                         start_time = time()
+
             elif state == 'ST_RENDERING':
                 if self.future.done():
                     self.log(f'Rendering complete of {self.tempPictures[-1]}')
+                    if self.future.exception():
+                        self.log(f'exception: {self.future.exception()}')
+                    if self.future.result().code != 200:
+                        self.log(f'http  result code: {self.future.result().code}')
                     #rendering finished, display it if the file exists, means download was ok
                     if os.path.exists(self.tempPictures[-1]):
                         self.log(f'Setting image: {self.tempPictures[-1]}')
