@@ -22,7 +22,7 @@ addon_path = addon.getAddonInfo('path')
 
 CONTROL_BACKGROUND = 1
 
-DEBUG_LOGS = True
+DEBUG_LOGS = False
 
 #doesnt work in this format but it should..
 #TMP_PATH = "special://temp/"
