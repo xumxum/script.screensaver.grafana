@@ -1,2 +1,2 @@
-
-- fix slow exit if during rendering, need a find a way to render in different thread that can be instantly interrupted..
+# Add the todo list here
+-
