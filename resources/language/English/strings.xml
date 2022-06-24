@@ -2,4 +2,7 @@
 <strings>
     <string id="32000">Refresh Interval seconds</string>
     <string id="32001">Urls text file</string>
+    <string id="32002">Rendering width</string>
+    <string id="32003">Rendering height</string>
+    <string id="32004">Tv On Exe</string>
 </strings>

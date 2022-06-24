@@ -12,6 +12,7 @@ from time import *
 import socket
 from concurrent import futures
 from http.client import HTTPConnection
+import subprocess
 
 
 addon = xbmcaddon.Addon()
@@ -21,32 +22,17 @@ addon_path = addon.getAddonInfo('path')
 
 CONTROL_BACKGROUND = 1
 
-
-#maybe put them in settings also?
-RENDER_WIDTH = '1920'
-RENDER_HEIGHT = '1080'
+DEBUG_LOGS = True
 
 #doesnt work in this format but it should..
 #TMP_PATH = "special://temp/"
 TMP_PATH = "/tmp/"
 
-#enable for grafana renderer..
-URL_SIZE_SUFFIX = '&width=' + RENDER_WIDTH + '&height=' + RENDER_HEIGHT
-#URL_SIZE_SUFFIX = ''
 
 #Since grafan stores by default all temporary rendered data for 24h, might be a good idea to lower that time to 1m for example
 #[[paths]]
 #    temp_data_lifetime=1m
 
-def is_tv_on():
-    TV_ON_EXE='/work/zee/tools/is_tv_on/is_tv_on.py'
-    #if no exe to say tv is on..assume it's ON
-    if not os.path.exists(TV_ON_EXE):
-        return True
-    status=subprocess.check_output([TV_ON_EXE]).decode('utf-8').strip()
-    if status == 'ok':
-        return True
-    return False
 
 #download of grafana rendered image that can be called as a future
 def download_image_interruptible(con, url, outfile):
@@ -89,7 +75,11 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         if self.urls:
             for i,u in enumerate(self.urls):
                 self.log(u)
-                self.urls[i] = u + URL_SIZE_SUFFIX
+                #if no widht and height in the url, add it,we must have otherwise is some lowress default
+                if '&width=' not in u:
+                    self.urls[i] = u + self.url_size_suffix
+                else:
+                    self.urls[i] = u
                 #self.log(self.urls[i])
 
         self.mainloop()
@@ -98,8 +88,10 @@ class Screensaver(xbmcgui.WindowXMLDialog):
     def read_settings(self):
         self.interval = int(addon.getSetting('refresh_interval'))
         self.urls_file = addon.getSetting('urls_file')
-        #ADDON.getSettingString('path')
-        #ADDON.getSettingInt('time')
+        self.tv_on_exe = addon.getSetting('tv_on_exe')
+        render_width = self.interval = int(addon.getSetting('render_width'))
+        render_height = self.interval = int(addon.getSetting('render_height'))
+        self.url_size_suffix = '&width=' + str(render_width) + '&height=' + str(render_height)
 
     def readUrls(self):
         try:
@@ -130,7 +122,15 @@ class Screensaver(xbmcgui.WindowXMLDialog):
         self.exit_monitor = None
         self.log('exit signalled')
 
-
+    #Call external script(if it exists) to check if the tv is on or not
+    def is_tv_on(self):
+        #if no exe to say tv is on..assume it's ON
+        if not os.path.exists(self.tv_on_exe):
+            return True
+        status=subprocess.check_output([self.tv_on_exe]).decode('utf-8').strip()
+        if status == 'on':
+            return True
+        return False
 
     def randomString(self,stringLength=16):
         letters = string.ascii_letters
@@ -199,8 +199,12 @@ class Screensaver(xbmcgui.WindowXMLDialog):
                 #waiting for a time until we start the grafana dashboard download
                 if time() - start_time >= self.interval:
                     #we waited enough, start next download
-                    self.start_rendering()
-                    state = 'ST_RENDERING'
+                    if self.is_tv_on():
+                        self.start_rendering()
+                        state = 'ST_RENDERING'
+                    else:
+                        #tv is not on, wait some more
+                        start_time = time()
             elif state == 'ST_RENDERING':
                 if self.future.done():
                     self.log(f'Rendering complete of {self.tempPictures[-1]}')
@@ -230,9 +234,9 @@ class Screensaver(xbmcgui.WindowXMLDialog):
 
 
 
-
     def log(self, msg):
-        xbmc.log('Grafana Screensaver: %s' % msg)
+        if DEBUG_LOGS:
+            xbmc.log('Grafana Screensaver: %s' % msg)
 
 
 if __name__ == '__main__':

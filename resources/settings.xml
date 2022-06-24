@@ -2,4 +2,7 @@
 <settings>
     <setting id="refresh_interval" type="number" label="32000" default="10"/>
     <setting id="urls_file" type="file"  label="32001" default="urls.txt"/>
+    <setting id="render_width" type="number" label="32002" default="1920"/>
+    <setting id="render_height" type="number" label="32003" default="1080"/>
+    <setting id="tv_on_exe" type="file"  label="32004" default="is_tv_on"/>
 </settings>
