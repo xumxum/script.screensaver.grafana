@@ -41,7 +41,7 @@ The grafana image rendered link will be
 Notes:
 - grafana-image-rendered can hang if some parameters are missing...I found out that adding `refresh=5s`to the url helps.
 - you can specify `width=` and `height=` in the url directly, if not the width and height from the Screensaver settings will be appended to the url before rendering
-- `kiosk` is also recommend to be added to the url, as it will remove the left manu part of the dashboard
+- `kiosk` is also recommended to be added to the url, as it will remove the left manu part of the dashboard
 
 See sample url file in `./extras/urls.txt`
 #### is_tv_on
