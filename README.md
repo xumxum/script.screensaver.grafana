@@ -54,6 +54,6 @@ An example implementation is by interogating home assistant of the state of a me
 You can create your own custom script and point the binary in Grafana screensaver settings. One example could be that the script will consider the tv to be on between 9am and 6pm, thus saving power outside of working hours.
 
 ## Notes
-- Do not set the interval to low as the grafana-image-rendering is processor intensive. It will start a chromium browser in the background and load the grafana dashboard, then return it as an image. I am using it on a strong Intel NUC i5 hardware and it can take the load, if you have a raspery or lower spec hardware, check the cpu
+- Do not set the interval to low as the grafana-image-rendering is processor intensive. It will start a chromium browser in the background and load the grafana dashboard, then return it as an image. I am using it on a strong Intel NUC i5 hardware and it can take the load, if you have a raspberry or lower spec hardware, check the cpu
 
 - grafana-image-rendered is still experimental and processor heavy, can also have bugs in older versions.
