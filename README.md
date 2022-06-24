@@ -36,7 +36,7 @@ The render url is the same as the dashboard url, with the `/render/` inserted be
 For example if the local link to a grafana dashboard is :
 `http://192.168.1.100:3000/d/q4jAnx6Zk/dashboard1?orgId=1&from=now-1h&to=now`   
 The grafana image rendered link will be
-`http://192.168.1.100:3000/render/d/9BS3sPyGk/dashboard1?orgId=1&refresh=5s&from=now-3h&to=now&kiosk`
+`http://192.168.1.100:3000/render/d/q4jAnx6Zk/dashboard1?orgId=1&refresh=5s&from=now-3h&to=now&kiosk`
 
 Notes:
 - grafana-image-rendered can hang if some parameters are missing...I found out that adding `refresh=5s`to the url helps.
