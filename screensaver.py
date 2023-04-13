@@ -102,11 +102,10 @@ class Screensaver(xbmcgui.WindowXMLDialog):
                 self.log("Opened urls file")
                 urlLines = f.read().splitlines()
 
-                #add width and height , maybe should check first
-                for i,u in enumerate(urlLines):
-                    if not u.startswith('#'):
+                for u in urlLines:
+                    if (not u.startswith('#')) and (u.strip()):
                         rez.append(u)
-                        self.log('loaded url: {}'.format(rez[-1]))
+                        self.log('loaded url: "{}"'.format(rez[-1]))
 
                 self.urls = rez
 
